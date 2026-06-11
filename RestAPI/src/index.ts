@@ -75,12 +75,19 @@ async function main() {
       queryEndTime,
     );
     res.json(part_count);
-    //const el = document.getElementById("output");
-    //if (!el) return;
+  });
 
-    //el.textContent = part_count.toString();
+  apiRouter.get("/torque", async (req: Request, res: Response) => {
+    let queryStartTime: string = String(req.query.start);
+    let queryEndTime: string = String(req.query.end);
 
-    //window.addEventListener("DOMContentLoaded", renderNumber);
+    if (!isDateValid(queryStartTime, queryEndTime)) {
+      res.json({ error: "Invalid parameters." });
+      return;
+    }
+
+    let torque: number[] = await Query.Torque(queryStartTime, queryEndTime);
+    res.json(torque);
   });
 
   // use the router we just defined

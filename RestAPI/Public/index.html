@@ -51,19 +51,17 @@ async function testAPI()
 		tableBody.appendChild(row);
   	});
 
-//     Object.entries(obj).forEach(([key, value]) => {
-//     const row = document.createElement("tr");
+	let j = await getData(`http://10.192.144.9:4000/toque?start=${start}&end=${end}`);
+	j.result.forEach((value, index) => {
+		const row = document.createElement("tr");
 
-//     const keyCell = document.createElement("td");
-//     keyCell.textContent = key;
+		const col1 = document.createElement("td");
+		col1.textContent = value.torque.toString();
 
-//     const valueCell = document.createElement("td");
-//     valueCell.textContent = String(value);
-
-//     row.appendChild(keyCell);
-//     row.appendChild(valueCell);
-//     tableBody.appendChild(row);
-//   });
+		row.appendChild(col1);
+		
+		tableBody.appendChild(row);
+  	});
 
 }
 </script>
@@ -95,5 +93,6 @@ async function testAPI()
 <tr>
 <td> Part Number </td>
 <td id="cycleTime"> Cycle Times </td>
+<td id="torque"> torque </td>
 </tr>
 <tr>

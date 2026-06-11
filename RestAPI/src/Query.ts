@@ -66,6 +66,33 @@ ORDER BY server_timestamp`;
   return time_diff_array;
 }
 
+//Query SQL data for Torque
+export async function Torque(start: string, end: string): Promise<number[]> {
+  const client = new pg.Client({
+    connectionString:
+      "postgres://postgres:academy2024!@192.168.232.31:3306/academy16",
+  });
+
+  await client.connect();
+
+  const sqlVar: string[] = [start, end];
+
+  let torque: string = `SELECT COUNT(*) AS count_above_80_percent
+            FROM public.iot_events
+            WHERE sensor_id = 'MACTTORQUE[1]'
+            AND ABS(value) > 0.8 * (
+                SELECT MAX(ABS(value))
+                FROM public.iot_events
+                WHERE sensor_id = 'MACTTORQUE[1]');`;
+
+  let result = await client.query(torque, sqlVar);
+  //console.log(result);
+  let torque_array: number[] = parsedTorque(result);
+  console.log(torque_array);
+
+  return torque_array;
+}
+
 function parsedCycleTime(result: pg.QueryResult<any>): cycleTimeResponse[] {
   let count: number = result.rowCount ?? 0;
   let time_diff_array: cycleTimeResponse[] = [];
@@ -86,4 +113,17 @@ function parsedCycleTime(result: pg.QueryResult<any>): cycleTimeResponse[] {
 function parsedPartCount(result: pg.QueryResult<any>): number {
   let part_count: number = result.rows[0];
   return part_count;
+}
+
+function parsedTorque(result: pg.QueryResult<any>): number[] {
+  let count: number = result.rowCount ?? 0;
+  let torque_array: number[] = [];
+  for (let index = 1; index < count; index++) {
+    let torque: number = result.rows[index].torque;
+
+    //console.log(result.rows[index]);
+    torque_array.push(torque);
+  }
+  console.log("torque is", torque_array);
+  return torque_array;
 }
