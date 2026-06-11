@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Web Chart Dashboard</title>
+  
+  <!-- Load the Google Charts API -->
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script>
+
+
+    /*
+     * async function getData(url);
+     * 
+     * This function will make the fetch() request to the desired URL
+     * and return the JSON content from the fetch.
+     */
+
+    async function getData(url)
+    {
+      // get the times table we are interested in 
+      const response = await fetch(url);
+
+      //extract JSON from the http response
+      return await response.json(); 
+    }
+
+
+    // Google Charts Configuration
+
+    // Initialize the chart object we're interested in using
+    google.charts.load('current', {'packages':['corechart']});
+
+    
+    // GLOBAL STATE (✅ important for live behavior)
+    let liveData = [];
+
+    // global variables to manage the line chart
+
+    var lineChart;
+    var lineChartOptions = {
+      title: 'Real-time Position Tracking (X, Y, Z)',
+      curveType: 'function',
+      legend: { position: 'bottom' },
+      hAxis: { title: 'Timestamp', format: 'HH:mm:ss' },
+      vAxis: { title: 'Values' },
+      width: '100%',
+      height: 500
+    };
+
+
+    // global variables to manage the line chart
+
+    var scatterChart;
+    var scatterChartOptions = {
+      title: 'Position of Robot End Effector',
+      hAxis: { 
+        title: 'X Coordinate Position', 
+        minValue: -800, 
+        maxValue: 800 
+      },
+      vAxis: { 
+        title: 'Y Coordinate Position', 
+        minValue: -800, 
+        maxValue: 800 
+      },
+      legend: 'none', // Hides legend since we are plotting a single series
+      colors: ['#FF0000'], // Red color for the data points
+      pointSize: 8, // Makes the scatter dots easier to see
+      width: '100%',
+      height: 500
+    };
+
+    /*
+     * function lineChartDraw(chartRows);
+     *
+     * This function will accept an array of chart data
+     * organized to support the insertion of data into
+     * the Google Line Chart object. In this example,
+     * the chartRows array must be an array of JSON 
+     * objects with timestamp, x, y, and z positional
+     * data, fetched from our database.
+     * 
+     * We create the data columns and connect the
+     * chartRows array to match the columns. Adjust this
+     * as you see fit for your own graphing purposes.
+     */
+
+    function lineChartDraw(chartRows) {
+      const data = new google.visualization.DataTable();
+      data.addColumn('date', 'Time');
+      data.addColumn('number', 'X');
+      data.addColumn('number', 'Y');
+      data.addColumn('number', 'Z');
+
+      data.addRows(chartRows);
+
+      // if we haven't yet created the line chart object, do that now
+      if (lineChart === undefined) {
+        lineChart = new google.visualization.LineChart(document.getElementById('lineChart'));
+      }
+
+      // and draw the object
+      lineChart.draw(data, lineChartOptions);
+    }
+
+    /*
+     * async function lineChartUpdate();
+     *
+     * This function will be called periodically
+     * to fetch robot data. It builds the URL to fetch
+     * the database rows that match the request, and
+     * then maps the returned database rows to the 
+     * chart data needed for the line chart drawing
+     * functionality. Adjust this to whatever your 
+     * graphing needs require.
+     */
+
+    async function lineChartUpdate()
+    {
+      // set up the API request to an API that returns X/Y robot data, for example
+    	//let url = `http://localhost:4000/getRobotData/1?last=50`;
+
+      let url = `/robot/positions`;
+      let robotData = await getData(url);
+      
+      if (!robotData.length) return;
+      
+      // ✅ take latest data point only
+      let latest = robotData[robotData.length - 1];
+      
+      // ✅ push into live buffer
+        liveData.push({
+          time: new Date(latest.server_timestamp),
+          x: latest.x,
+          y: latest.y,
+          z: latest.z
+        });
+
+      
+      // ✅ keep last 50 points
+        const MAX_POINTS = 50;
+        if (liveData.length > MAX_POINTS) {
+          liveData.shift();
+        }
+
+      // build the chartRows data array based on returned API data
+      const chartRows = liveData.map(item => [
+        item.time,
+        item.x,
+        item.y,
+        item.z
+      ]);
+
+      // adjust the line chart tiel configuration to reflect the
+      // robot we're working with
+
+      lineChartOptions.title = `Real-time Position Tracking (X, Y, Z) for Robot`,
+
+      
+      // ✅ set moving window BEFORE drawing
+      lineChartOptions.hAxis.viewWindow = {
+        min: liveData[0]?.time,
+        max: liveData[liveData.length - 1]?.time
+      };
+
+      // draw the line chart
+      lineChartDraw(chartRows);
+    }
+
+    /*
+     * function scatterChartDraw(scatterRows);
+     *
+     * This function will accept an array of chart data
+     * organized to support the insertion of data into
+     * the Google Scatter Chart object. In this example,
+     * the chartRows array must be an array of JSON 
+     * objects with x, y positional
+     * data, fetched from our database. Timestamp
+     * is not being used here since this is simply
+     * a pictorial representation of the position of
+     * the robot end effector overtop of the conveyor.
+     * 
+     * We create the data columns and connect the
+     * chartRows array to match the columns. Adjust this
+     * as you see fit for your own graphing purposes.
+     */
+
+    function scatterChartDraw(chartRows) {
+      const data = new google.visualization.DataTable();
+      data.addColumn('number', 'X');
+      data.addColumn('number', 'Y');
+
+      data.addRows(chartRows);
+
+      // if we haven't yet created the line chart object, do that now
+      if (scatterChart === undefined) {
+        scatterChart = new google.visualization.ScatterChart(document.getElementById('scatterChart'));
+      }
+
+      // and draw the object
+      scatterChart.draw(data, scatterChartOptions);
+    }
+
+    /*
+     * async function scatterChartUpdate();
+     *
+     * This function will be called periodically
+     * to fetch robot data. It builds the URL to fetch
+     * the database rows that match the request, and
+     * then maps the returned database rows to the 
+     * chart data needed for the line chart drawing
+     * functionality. Adjust this to whatever your 
+     * graphing needs require.
+     */
+
+    async function scatterChartUpdate()
+    {
+      // set up the API request to an API that returns X/Y robot data, for example
+    	//let url = `http://localhost:4000/getRobotData/1?last=1`;
+
+      let url = `/robot/positions`;
+      let robotData = await getData(url);
+
+      
+if (!robotData.length) return;
+
+    // ✅ use latest only
+    let latest = robotData[robotData.length - 1];
+
+   
+
+      // build the chartRows data array based on returned API data
+
+      // const chartRows = [ 
+      //   [ robotData[0].x, robotData[0].y ]
+      // ];
+
+      // build the chartRows data array based on returned API data
+      const chartRows = [
+        [ latest.x, latest.y ]
+      ];
+
+      // adjust the line chart tiel configuration to reflect the
+      // robot we're working with
+
+      scatterChartOptions.title = `Position of Robot End Effector for Robot`,
+
+      // draw the line chart
+      scatterChartDraw(chartRows);
+    }
+
+    // update the chart every half second
+    setInterval(lineChartUpdate, 500);
+    setInterval(scatterChartUpdate, 500);
+
+  </script>
+</head>
+<body>
+  <table border="0">
+  <tr>
+    <td width="900"><div id="lineChart" style="width: 100%; height: 500px;">Loading Line Chart...</div></td>
+    <td width="900"><div id="scatterChart" style="width: 100%; height: 500px;">Loading Scatter Chart...</div></td>
+  </tr>
+  </table>
+  </div>
+</body>
+</html>

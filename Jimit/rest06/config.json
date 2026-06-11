@@ -1,0 +1,20 @@
+{
+	"projectTitle": "rest06",
+
+	"sql": 
+	{
+	"host": "192.168.232.31",
+	"port": 3306,
+	"database": "academy16",
+	"user": "postgres",
+	"password": "academy2024!"
+	},
+
+ 	"mqtt": 
+	{
+		"brokerUrl": "mqtt://192.168.232.31",
+		"mqttPort": 1883,
+		"baseTopic": "ACADEMY03/"
+ 	}
+
+}

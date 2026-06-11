@@ -1,0 +1,48 @@
+﻿<!doctype html>
+<head>
+<title>Test API</title>
+</head>
+
+<script>
+
+async function getData(url)
+{
+	const response = await fetch(url);
+	return await response.json();
+}
+
+async function testAPI()
+{
+	let u = "/filter";
+
+    let data = await getData(u);
+
+    // ✅ correct handling (NO LOOP)
+    document.getElementById("showData").innerHTML =
+        "Count above 80%: " + data.count_above_80_percent;
+
+}
+
+</script>
+
+</body>
+
+<h1>Test API</h1>
+<p>
+
+<label for="whichTable">Which Times Table?</label>
+<input type="number" id="whichTable" value="5"></input>
+<input type="button" value="GO" onClick="testAPI()"></input>
+
+<table border=1 width=400>
+<tr><td id="cell0"><i>row 0</i></td></tr>
+<tr><td id="cell1"><i>row 1</i></td></tr>
+<tr><td id="cell2"><i>row 2</i></td></tr>
+<tr><td id="cell3"><i>row 3</i></td></tr>
+<tr><td id="cell4"><i>row 4</i></td></tr>
+<tr><td id="cell5"><i>row 5</i></td></tr>
+
+<tr>
+<td id="showData"><i>click GO button!</i></td>
+</tr>
+</table>
