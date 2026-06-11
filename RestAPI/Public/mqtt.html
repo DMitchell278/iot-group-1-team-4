@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MQTT Live Dashboard</title>
+    <!-- Load MQTT.js from CDN via WebSockets -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.14.1/mqtt.min.js"></script>
+  </head>
+  <body>
+    <h1>Live IoT Monitor</h1>
+
+    <div>
+      <!-- Connection Status Indicator -->
+      <table border="1">
+        <tr>
+          <td id="status">Status: Disconnected</td>
+        </tr>
+      </table>
+
+      <!-- Live Data Displays -->
+      <table border="1">
+        <tr>
+          <td>MQTT Topic:</td>
+          <td id="topic">please wait</td>
+        </tr>
+        <tr>
+          <td>MQTT Payload:</td>
+          <td id="payload">please wait</td>
+        </tr>
+      </table>
+
+      <table border="1">
+        <tr>
+          <td class="timestamp">
+            Last updated: <span id="time-value">Never</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      // Configuration: Using a public broker over encrypted WebSockets (WSS)
+      const brokerUrl = "wss://test.mosquitto.org:8081";
+      const topicName = "factory/equipment/status";
+
+      // Connect to the MQTT Broker
+      const client = mqtt.connect(brokerUrl);
+      const statusDiv = document.getElementById("status");
+
+      // Event: Successful Connection
+      client.on("connect", () => {
+        statusDiv.textContent = "Status: Connected";
+        console.log("Connected to broker");
+
+        // Subscribe to your topic
+        client.subscribe(topicName, (err) => {
+          if (!err) {
+            console.log(`Subscribed to topic: ${topicName}`);
+          }
+        });
+      });
+
+      // Event: Connection Lost
+      client.on("close", () => {
+        statusDiv.textContent = "Status: Disconnected";
+      });
+
+      // Event: Message Received
+      client.on("message", (topic, payload) => {
+        // Convert payload buffer to string
+        const messageString = payload.toString();
+        console.log(`Received: ${messageString} on topic: ${topic}`);
+
+        try {
+          // Parse the data (Assumes payload structure: {"value": 22.5})
+          const data = JSON.parse(messageString);
+
+          document.getElementById("topic").textContent = `${topic}`;
+          if (data.status !== undefined) {
+            document.getElementById("payload").textContent =
+              `${JSON.stringify(data)}`;
+          } else {
+            // Fallback if the payload is just a raw number string instead of JSON
+            document.getElementById("temp-value").textContent =
+              `${messageString} °C`;
+          }
+        } catch (e) {
+          // Fallback handling for non-JSON raw payloads
+          document.getElementById("temp-value").textContent =
+            `${messageString} °C`;
+        }
+
+        // Update timestamp
+        const now = new Date();
+        document.getElementById("time-value").textContent =
+          now.toLocaleTimeString();
+      });
+    </script>
+  </body>
+</html>

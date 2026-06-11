@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<head>
+<title>Test API</title>
+</head>
+
+<script> src="dist/index.js"
+
+async function getData(url)
+{
+	const response = await fetch(url);
+	return await response.json();
+}
+
+async function testAPI()
+{
+	//let u = "Group4API/";
+	//let ttable = parseInt (document.getElementById("whichTable").value, 10);
+	//if (ttable < 1)
+		//ttable = 1;
+	//u = u + ttable.toString();
+
+	//let j = await getData(u);
+	let start=document.getElementById("startTime").value
+	let end=document.getElementById("endTime").value
+
+	//document.getElementById("showData").innerHTML = j;
+	
+
+	let k = await getData(`http://10.192.144.9:4000/partcount?start=${start}&end=${end}`);
+	console.log(k);
+
+	document.getElementById("output").innerText=k.total_count;
+
+	let l = await getData(`http://10.192.144.9:4000/cycletime?start=${start}&end=${end}`);
+    console.log(l);
+    //document.getElementById("cycleTime").innerText=l.result;
+
+	const tableBody = document.getElementById("cycleTable");
+	 
+	l.result.forEach((value, index) => {
+		const row = document.createElement("tr");
+
+		const col1 = document.createElement("td");
+		col1.textContent = value.serverTimeStamp.toString();
+
+		const col2 = document.createElement("td");
+		col2.textContent = value.timeDiff.toString();
+
+		row.appendChild(col1);
+		row.appendChild(col2);
+		tableBody.appendChild(row);
+  	});
+
+//     Object.entries(obj).forEach(([key, value]) => {
+//     const row = document.createElement("tr");
+
+//     const keyCell = document.createElement("td");
+//     keyCell.textContent = key;
+
+//     const valueCell = document.createElement("td");
+//     valueCell.textContent = String(value);
+
+//     row.appendChild(keyCell);
+//     row.appendChild(valueCell);
+//     tableBody.appendChild(row);
+//   });
+
+}
+</script>
+
+</body>
+
+<h1>Group 4 API</h1>
+<p>
+
+<label for="startTime">Enter Start Time</label>
+<input type="string" id="startTime" value="2026-06-09 14:00:00"></input>
+
+
+</tr>
+<label for="endTime">Enter End Time</label>
+<input type="string" id="endTime" value="2026-06-09 16:00:00"></input>
+<input type="button" value="GO" onClick="testAPI()"></input>
+
+<table border=1 width=400>
+<tr>
+<td id="showData"><i>click GO button!</i></td>
+</tr>
+</table>
+<table id="cycleTable" border=1 width=400>
+<tr>
+<td> Part Count </td>
+<td id="partCount"> <div id="output"></div> </td>
+</tr>
+<tr>
+<td> Part Number </td>
+<td id="cycleTime"> Cycle Times </td>
+</tr>
+<tr>

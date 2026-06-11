@@ -1,0 +1,262 @@
+﻿<!doctype html>
+<html></html>
+<head>
+    <title>Simple Dashboard 2</title>
+</head>
+
+
+
+<!-- include the support code for charting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js"></script>
+
+
+<script>
+
+/*
+ * function updateChart(chartCanvas, chartData, chartLabel, xAxisLabel, yAxisLabel);
+ *
+ * This function will leverage the line chart from chart.js
+ * to plot a time series JSON object (holding a 
+ * timestamp and a value for the y axis). The first parameter is a reference
+ * to the canvas we will be updating.
+ */
+
+var testLineChart = undefined;	// global variable to track chart object creation
+
+function updateChart(chartCanvas, numLines, chartData, lineColour, chartLabel, xAxisLabel, yAxisLabel)
+{
+    try {
+		// set up chart configuration details based on supplied parameters
+
+		if (testLineChart == undefined) {
+			// we are creating the chart object for the first time
+
+			var chartConfig = [];
+			for (x = 0; x <numLines; x++) {
+					chartConfig[x] = {
+					label: chartLabel[x],
+					borderColor: lineColour[x],
+					data: chartData[x]
+				};
+			}
+
+			var testLineChart = new Chart(chartCanvas, {
+				type: 'line',
+				data: {
+					datasets: chartConfig
+				},
+				options: {
+					animation: {
+						duration: 0		// comment this line to animate the line graph
+					},
+					scales: {
+					xAxes: [{
+						type: 'time',
+						ticks: {
+							maxTicksLimit: 10,
+							beginAtZero: true
+						},
+						scaleLabel: {
+							display: true,
+							labelString: xAxisLabel
+						}
+					}],
+					yAxes: [{
+						ticks: {
+							maxTicksLimit: 10,
+							beginAtZero: true
+						},
+					scaleLabel: {
+						display: true,
+						labelString: yAxisLabel
+						}
+					}]
+					}
+				}
+			});
+		} else {
+			// updating chart object for all subsequent refreshes
+			
+			testLineChart.data.datasets = chartConfig;
+			testLineChart.update();
+		}
+	} catch (e) {
+		console.log (e);
+	}
+}
+
+/*
+ * async function getData(url);
+ * 
+ * This function will make the fetch() request to the desired URL
+ * and return the JSON content from the fetch.
+ */
+
+async function getData(url)
+{
+	// get the times table we are interested in 
+	const response = await fetch(url);
+
+	//extract JSON from the http response
+	return await response.json(); 
+}
+
+
+/*
+ * async function updateDashboard();
+ *
+ * This function will be called upon during interval
+ * expiry, fetch API results and update the HTML user interface
+ * based on ids we have set up in our coding below.
+ */
+
+async function updateDashboard()
+{
+	// previous code from visualization.html
+
+	// build the URL to our API for a requested times table
+
+	// demonstrate updating our canvas in our user interface with
+	// some randomized time series data. Note the parameters provided allow for
+	// some customizations. 
+
+//	let url = "http://127.0.0.1:4000/myAPI/";
+//	let jsonData = await getData(url);
+
+	// TODO: fetch some time series data using your APIs, and plot. Note that
+	// the chart tool requires actual Date objects instantiated, so you'll have
+	// to take your time strings from your API and supply those for the Date()
+	// constructor - see demonstration below
+
+	let y = 0;
+	let dataForChart = [];
+	let dataForChart2 = [];
+
+
+	// run through all of your API's results to pull in the data you wish to chart and
+	// set up the chart data so that we have timestamps and data associated.
+	// timestamps are the X axis of the line chart, and the data is the y axis
+
+	// TODO: loop for all members of the JSON object returned by your API to configure
+	// the time / Y value data points for the line chart
+	// below we will simulate some randomized data for the demonstration
+
+	// how many points to plot?
+
+	let numPoints = 50;	// jsonData.length;	// how many points to plot based on returned API data
+
+	// create the Chart.js data arrays needed for line plotting
+
+	for (y = 0; y < numPoints; y++) {
+		// To demonstrate, create an arbitrary date for chart.
+		// The chart data array is a simple structure with two members: 
+		//     t (time series timestamp) 
+		//     y (value for y axis)
+
+		// TODO: use your time series data from your API and instantiate a Date object
+		// using that string, and use the telemetry data that your API provides to populate
+		// the chart data array
+
+		let d = new Date("2024-04-09T11:12:" + (13 + y / 100).toString());	// here, just simulate different timestamps
+
+		let v = Math.floor(Math.random() * 400) - 200;	// simulate both pos / neg Y values
+		dataForChart[y] = { t: d, y: v};
+
+		// here we configure a second set of randomized data to showcase 2 lines drawn
+		// again, use your returned JSON data from your API effectively
+
+		let v2 = Math.floor(Math.random() * 600) - 300;	// simulate both pos / neg Y values
+		dataForChart2[y] = { t: d, y: v2};
+	}
+
+	// now let's set up the chart object
+
+	// configure data for chart helper function - the parameters include:
+	//    how many lines do we want to plot (here we have 2 lines)
+	//    an array of t/y data (here we have one two of t/y data)
+	//    an array of line colours (here we have 2 lines so 2 colours initialized)
+	//    an array of chart labels (that identify meaning of the colours)
+	// You can play with this approach to set up additional lines based on data
+	// from your API - for example, plot the X, Y and Z positions of a robot
+	// as 3 separate lines
+
+	let numLines = 2;
+	let chartLabel = [];
+	let chartColor = [];
+	let multivalueDataForChart = [];
+
+	multivalueDataForChart[0] = dataForChart;
+	chartLabel[0] = "Test of Data Plot";
+	chartColor[0] = "blue";
+
+	multivalueDataForChart[1] = dataForChart2;
+	chartLabel[1] = "Another Test";
+	chartColor[1] = "red";
+
+	// identify the axis labels, using a randomized Y axis label to 
+	// showcase how dynamic the chart can be
+
+	let xAxisLabel = "Time of Reading";
+	let yAxisLabel = "Values";
+
+	// update the chart for 2 lines with this data using our helper function above
+
+	let theCanvas = document.getElementById("chartTest").getContext('2d');
+
+	updateChart(theCanvas, numLines, multivalueDataForChart, chartColor, chartLabel, xAxisLabel, yAxisLabel);
+
+	// TODO: 
+	// Can you see value in showing multiple time series data points in a single chart? 
+
+	// TODO: 
+	// Can you create additional charts placed on top of additional canvases, each 
+	// showing something different? Remember, each canvas should have its own unique ID to help
+	// differentiate one chart from another.
+
+	// TODO: 
+	// Which is more effective as an information display?
+
+}
+
+/*
+ * async function main();
+ *
+ * This function will setup our support for a simple web based visualization
+ * of our PreSorter Robot system.
+ *
+ */
+
+async function main()
+{
+	setInterval (updateDashboard, 1000);
+}
+
+// execute main
+
+main();
+
+</script>
+
+
+<!-- the user interface for our dashboard is below -->
+
+
+<body>
+
+<h1> Simple Dashboard 2 </h1>
+<p>
+This example will showcase how to display time series data via a JSON object
+leveraging the chart.js and moment.js (JavaScript package can be pulled into
+your web solution via <A HREF = 
+"https://www.chartjs.org/docs/latest/getting-started/installation.html#bundled-build">
+this link</A>).
+</p>
+<p>
+The chart will appear in the canvas object shown below our original times
+table visualization.
+</p>
+<canvas id="chartTest" height="90"></canvas>
+
+</body>
+
+</html>
