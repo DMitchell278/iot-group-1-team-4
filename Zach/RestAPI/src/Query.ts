@@ -86,7 +86,7 @@ export async function Torque(
   const sqlVar: string[] = [start, end];
 
   let torque: string = `SELECT
-    server_timestamp, value
+    server_timestamp, ABS(value)
 FROM public.iot_events
 WHERE sensor_id = 'MACTTORQUE[1]'
   AND server_timestamp BETWEEN $1
@@ -128,7 +128,7 @@ function parsedTorque(result: pg.QueryResult<any>): torqueResponse[] {
   let torqueArray: torqueResponse[] = [];
   for (let index = 1; index < count; index++) {
     const torqueValues: torqueResponse = {
-      torque: result.rows[index].value,
+      torque: result.rows[index].abs,
       serverTimeStamp: result.rows[index].server_timestamp,
     };
     //let time_diff: cycleTimeResponse = result.rows[index].time_diff_seconds;
@@ -136,6 +136,6 @@ function parsedTorque(result: pg.QueryResult<any>): torqueResponse[] {
     //console.log(result.rows[index]);
     torqueArray.push(torqueValues);
   }
-  console.log("result test:", torqueArray[5]?.torque);
+  console.log("result test:", result.rows);
   return torqueArray;
 }
