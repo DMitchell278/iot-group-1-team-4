@@ -1,0 +1,4 @@
+.env*
+.prettierrc
+*.bat
+node_modules

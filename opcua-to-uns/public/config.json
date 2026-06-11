@@ -1,0 +1,17 @@
+{
+    "opcuaTags": [
+        "ns=1;s=HMI_GVL.M.Rob2.ROBOTPOS.X",
+        "ns=1;s=HMI_GVL.M.Rob2.ROBOTPOS.Y",
+        "ns=1;s=HMI_GVL.M.Rob2.ROBOTPOS.Z",
+        "ns=1;s=HMI_GVL.M.Rob2.MACTTORQUE[1]",
+        "ns=1;s=HMI_GVL.M.Rob2.MACTTORQUE[2]",
+        "ns=1;s=HMI_GVL.M.Rob2.MACTTORQUE[3]",
+        "ns=1;s=HMI_GVL.M.Rob2.MACTTORQUE[4]",
+        "ns=1;s=HMI_GVL.M.Rob2.INITIALIZED",
+        "ns=1;s=HMI_GVL.M.Rob2.RUNNING",
+        "ns=1;s=HMI_GVL.M.Rob2.WSVIOLATION",
+        "ns=1;s=HMI_GVL.M.Rob2.PAUSED",
+        "ns=1;s=HMI_GVL.M.Rob2.SPEEDPERCENTAGE",
+        "ns=1;s=HMI_GVL.M.Rob2.FINISHEDPARTNUM"
+    ]
+}

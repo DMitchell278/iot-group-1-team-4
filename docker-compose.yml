@@ -1,0 +1,35 @@
+services:
+  uns-ingest:
+    image: "dmitchell278/opcua-to-uns:latest"
+    restart: always
+    volumes:
+      - ./opcua-to-uns/public/config.json:/app/public/config.json
+    environment:
+      - OPCUA_ENDPOINT=opc.tcp://192.168.232.30:26543
+      - MQTT_BROKER_ENDPOINT=mqtt://192.168.232.31:1883
+      - MQTT_BASE_TOPIC=group-4/daniel/test
+      - CONFIG_PATH=./public/config.json
+      - PUBLISHING_INTERVAL=1000
+      - SAMPLING_INTERVAL=250
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+  db-store:
+    image: dmitchell278/mqtt-to-db:latest
+    restart: always
+    environment:
+      - MQTT_BROKER_ENDPOINT=mqtt://192.168.232.31:1883
+      - MQTT_BASE_TOPIC=group-4/daniel/test
+      - DB_HOST=192.168.232.31
+      - DB_PORT=3306
+      - DB_NAME=academy16
+      - DB_USER=postgres
+      - DB_PASS=academy2024!
+      - FLUSH_INTERVAL=5000
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    depends_on:
+      - uns-ingest

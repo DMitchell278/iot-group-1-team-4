@@ -1,0 +1,39 @@
+services:
+  uns-ingest:
+    build:
+      context: ./opcua-to-uns
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./opcua-to-uns/public/config.json:/app/public/config.json
+    environment:
+      - OPCUA_ENDPOINT=opc.tcp://192.168.232.30:26543
+      - MQTT_BROKER_ENDPOINT=mqtt://localhost:1883
+      - MQTT_BASE_TOPIC=group-4/daniel/test
+      - CONFIG_PATH=./public/config.json
+      - PUBLISHING_INTERVAL=500
+      - SAMPLING_INTERVAL=100
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  db-store:
+    build:
+      context: ./mqtt-to-db
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MQTT_BROKER_ENDPOINT=mqtt://localhost:1883
+      - MQTT_BASE_TOPIC=group-4/daniel/test
+      - DB_HOST=localhost
+      - DB_PORT=3306
+      - DB_NAME=academy00
+      - DB_USER=postgres
+      - DB_PASS=academy2024
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    depends_on:
+      - uns-ingest
