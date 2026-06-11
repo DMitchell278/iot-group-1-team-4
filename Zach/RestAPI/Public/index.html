@@ -35,7 +35,7 @@ async function testAPI()
     console.log(l);
     //document.getElementById("cycleTime").innerText=l.result;
 
-	const tableBody = document.getElementById("cycleTable");
+	var tableBody = document.getElementById("cycleTable");
 	 
 	l.result.forEach((value, index) => {
 		const row = document.createElement("tr");
@@ -51,15 +51,22 @@ async function testAPI()
 		tableBody.appendChild(row);
   	});
 
-	let j = await getData(`http://10.192.144.9:4000/toque?start=${start}&end=${end}`);
-	j.result.forEach((value, index) => {
+	let m = await getData(`http://10.192.144.9:4000/torque?start=${start}&end=${end}`);
+
+	tableBody = document.getElementById("torqueTable");
+
+	console.log("This is m",m);
+	m.result.forEach((value, index) => {
 		const row = document.createElement("tr");
 
 		const col1 = document.createElement("td");
-		col1.textContent = value.torque.toString();
+		col1.textContent = value.serverTimeStamp.toString();
+
+		const col2 = document.createElement("td");
+		col2.textContent = value.torque.toString();
 
 		row.appendChild(col1);
-		
+		row.appendChild(col2);
 		tableBody.appendChild(row);
   	});
 
@@ -80,6 +87,8 @@ async function testAPI()
 <input type="string" id="endTime" value="2026-06-09 16:00:00"></input>
 <input type="button" value="GO" onClick="testAPI()"></input>
 
+<div style="display: flex;">
+	<div>
 <table border=1 width=400>
 <tr>
 <td id="showData"><i>click GO button!</i></td>
@@ -93,6 +102,22 @@ async function testAPI()
 <tr>
 <td> Part Number </td>
 <td id="cycleTime"> Cycle Times </td>
-<td id="torque"> torque </td>
 </tr>
 <tr>
+</table>
+</div>
+
+<div>
+<table border=1 width=400>
+<tr>
+<td id="torque"><i></i></td>
+</tr>
+</table>
+<table id="torqueTable" border=1 width=400>
+<tr>
+<td> torque </td>
+<td id="torquevalue"> <div id="output2"></div> </td>
+</tr>
+<tr>
+	</div>
+</div>

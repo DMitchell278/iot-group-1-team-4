@@ -4,6 +4,11 @@ export interface cycleTimeResponse {
   timeDiff: string;
   serverTimeStamp: string;
 }
+
+export interface torqueResponse {
+  torque: string;
+  serverTimeStamp: string;
+}
 //Query SQL table data for part counter
 export async function partCounter(start: string, end: string): Promise<number> {
   const client = new pg.Client({
@@ -67,7 +72,10 @@ ORDER BY server_timestamp`;
 }
 
 //Query SQL data for Torque
-export async function Torque(start: string, end: string): Promise<number[]> {
+export async function Torque(
+  start: string,
+  end: string,
+): Promise<torqueResponse[]> {
   const client = new pg.Client({
     connectionString:
       "postgres://postgres:academy2024!@192.168.232.31:3306/academy16",
@@ -77,17 +85,17 @@ export async function Torque(start: string, end: string): Promise<number[]> {
 
   const sqlVar: string[] = [start, end];
 
-  let torque: string = `SELECT COUNT(*) AS count_above_80_percent
-            FROM public.iot_events
-            WHERE sensor_id = 'MACTTORQUE[1]'
-            AND ABS(value) > 0.8 * (
-                SELECT MAX(ABS(value))
-                FROM public.iot_events
-                WHERE sensor_id = 'MACTTORQUE[1]');`;
+  let torque: string = `SELECT
+    server_timestamp, value
+FROM public.iot_events
+WHERE sensor_id = 'MACTTORQUE[1]'
+  AND server_timestamp BETWEEN $1
+                          AND $2
+ORDER BY server_timestamp`;
 
   let result = await client.query(torque, sqlVar);
   //console.log(result);
-  let torque_array: number[] = parsedTorque(result);
+  let torque_array: torqueResponse[] = parsedTorque(result);
   console.log(torque_array);
 
   return torque_array;
@@ -115,15 +123,19 @@ function parsedPartCount(result: pg.QueryResult<any>): number {
   return part_count;
 }
 
-function parsedTorque(result: pg.QueryResult<any>): number[] {
+function parsedTorque(result: pg.QueryResult<any>): torqueResponse[] {
   let count: number = result.rowCount ?? 0;
-  let torque_array: number[] = [];
+  let torqueArray: torqueResponse[] = [];
   for (let index = 1; index < count; index++) {
-    let torque: number = result.rows[index].torque;
+    const torqueValues: torqueResponse = {
+      torque: result.rows[index].value,
+      serverTimeStamp: result.rows[index].server_timestamp,
+    };
+    //let time_diff: cycleTimeResponse = result.rows[index].time_diff_seconds;
 
     //console.log(result.rows[index]);
-    torque_array.push(torque);
+    torqueArray.push(torqueValues);
   }
-  console.log("torque is", torque_array);
-  return torque_array;
+  console.log("result test:", torqueArray[5]?.torque);
+  return torqueArray;
 }

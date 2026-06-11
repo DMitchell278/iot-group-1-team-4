@@ -86,8 +86,11 @@ async function main() {
       return;
     }
 
-    let torque: number[] = await Query.Torque(queryStartTime, queryEndTime);
-    res.json(torque);
+    let torque: Query.torqueResponse[] = await Query.Torque(
+      queryStartTime,
+      queryEndTime,
+    );
+    res.json({ result: torque });
   });
 
   // use the router we just defined
