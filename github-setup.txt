@@ -1,0 +1,22 @@
+-------- GitHub Repository Setup -------------
+git init 				                    // create repository on local machine
+git branch main -M			                // make sure "main" not "master"
+git remote add origin [repo link]	        // "link to cloud GitHub repo"
+git pull origin main			            // pull files on GitHub Cloud to local computer
+
+
+git add .					                    // stage files
+git commit -m "added hotfix for start end bug"	// commit files with a short and informative commit message
+git push -u origin main				            // push local files to Github Cloud repository
+-----------------------------------------------
+
+
+
+
+------------ Update Github Cloud Repository ------------
+git pull
+
+git add .
+git commit -m "msg"
+git push
+---------------------------------------------------------
